@@ -10,11 +10,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 4
       matrix:
-        # Note: python 3.7 is very old, uv supports it, 
-        # but ensure your Django version does too!
-        python-version: ["3.9", "3.10", "3.11"] 
+        python-version: ["3.10", "3.11", "3.12"]
 
     steps:
     - uses: actions/checkout@v4
@@ -23,13 +20,10 @@ jobs:
       uses: astral-sh/setup-uv@v5
       with:
         python-version: ${{ matrix.python-version }}
-        enable-cache: true
 
-    - name: Install Dependencies
-      # 'uv pip install' is a drop-in replacement for pip
-      run: uv pip install -r requirements.txt
+    - name: Install Django
+      # If you don't have a file, just list the packages here
+      run: uv pip install django 
 
     - name: Run Tests
-      run: |
-        # Use 'uv run' to ensure the tests run in the synced environment
-        uv run python manage.py test
+      run: uv run python manage.py test
