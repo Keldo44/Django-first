@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, FileResponse
 from django.template import loader
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
@@ -20,6 +20,11 @@ def horari_tarde(request):
 
   return HttpResponse(template.render(context, request))
 
+def download_horario(request):
+  latest_file = File.objects.latest('created')
+  # 2. Open the file
+  file_handle = latest_file.file.open('rb')
+  return FileResponse(file_handle, as_attachment=True, filename="horari.txt")
 
 def horari(request):
   return render(request, 'horari.html')
@@ -85,7 +90,7 @@ def file_detail(request, file_id):
 
 def create_class(class_parts):
   days_map = {'MON': 0, 'TUE': 1, 'WED': 2, 'THU': 3, 'FRI': 4}
-  hours_map = {'1': ['15:00:00','17:00:00'], '2': ['17:00:00','19:00:00']}
+  hours_map = {'0':['15:00:00','17:00:00'],'1':['15:00:00','16:00:00'],'2':['16:00:00','17:00:00'],'3':['17:00:00','18:00:00'],'4':['18:00:00','19:00:00'],'5':['17:00:00','19:00:00']}
   day_num = days_map.get(class_parts[0])
   hours = hours_map.get(class_parts[1])
   subject_obj = Subject.objects.get(id=int(class_parts[2]))
@@ -99,3 +104,8 @@ def create_class(class_parts):
   )
 
   new_class.save()
+
+
+def error404(request):
+  template = loader.get_template('404.html')
+  return HttpResponse(template.render({}, request))

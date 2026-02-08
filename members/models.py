@@ -1,5 +1,6 @@
 from django.db import models
-from django.core.validators import FileExtensionValidator
+from django.core.validators import FileExtensionValidator, RegexValidator
+
 
 class Member(models.Model):
   id = models.AutoField(primary_key=True)
@@ -13,6 +14,12 @@ class Member(models.Model):
 class Subject(models.Model):
   id = models.AutoField(primary_key=True)
   name = models.CharField(max_length=255)
+  color = models.CharField(
+        max_length=7,
+        default='#3498db',
+        validators=[RegexValidator(r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')]
+  )
+
 
   def __str__(self):
     return self.name
@@ -44,6 +51,7 @@ class Class(models.Model):
 class File(models.Model):
     id = models.AutoField(primary_key=True)
     filename = models.CharField(max_length=255)
+    created = models.DateTimeField(auto_now_add=True)
 
     file = models.FileField(
         upload_to='files/%Y/%m',
