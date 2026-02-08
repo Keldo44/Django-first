@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --main-btn: #111111;
+            --accent-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: sans-serif;
+            color: white;
+        }
+
+        .upload-container {
+            text-align: center;
+            /* Animación de entrada que definimos antes */
+            animation: fadeUp 1s ease-out 0.3s forwards;
+            opacity: 0;
+        }
+
+        /* Ocultamos el input de archivo original */
+        #archivo-txt {
+            display: none;
+        }
+
+        /* Convertimos el label en el botón grande central */
+        .custom-file-upload {
+            background-color: var(--main-btn);
+            color: white;
+            padding: 2rem 4rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 16px;
+            border: 1px solid var(--accent-border);
+            cursor: pointer;
+            display: inline-block;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .custom-file-upload:hover {
+            transform: scale(1.05);
+            background-color: #1a1a1a;
+        }
+
+        /* Estilo para el botón de enviar (inicialmente oculto) */
+        #submit-btn {
+            margin-top: 20px;
+            background-color: #ffffff;
+            color: #000000;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            display: none; /* Oculto por defecto */
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .file-name {
+            display: block;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="upload-container">
+    <form action="/file/upload/" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <label for="archivo-txt" class="custom-file-upload">
+            Elegir Horario (.txt)
+        </label>
+
+        <input type="file" id="archivo-txt" name="file" accept=".txt" onchange="fileSelected()">
+
+        <span id="file-chosen" class="file-name">Ningún archivo seleccionado</span>
+
+        <button type="submit" id="submit-btn">
+            Subir Archivo
+        </button>
+    </form>
+</div>
+
+<script>
+    function fileSelected() {
+        const fileInput = document.getElementById('archivo-txt');
+        const fileName = document.getElementById('file-chosen');
+        const submitBtn = document.getElementById('submit-btn');
+
+        if (fileInput.files.length > 0) {
+            fileName.textContent = "Archivo listo: " + fileInput.files[0].name;
+            submitBtn.style.display = 'inline-block'; // Mostramos el botón de subir
+        }
+    }
+</script>
+
+</body>
+</html>

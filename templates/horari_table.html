@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Academic Schedule</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a0a;
+            --grid-line: rgba(255, 255, 255, 0.1); /* Very light grey for grid lines */
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --text-dim: #777777;
+            --accent-gold: #daa520;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, sans-serif;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Container with the grid lines */
+        .schedule-wrapper {
+            display: grid;
+            width: 100%;
+            max-width: 1200px;
+            grid-template-columns: 80px repeat(5, 1fr);
+            grid-template-rows: 60px; /* Header height */
+            grid-auto-rows: 90px;      /* Hour height */
+
+            /* The 'Gap' creates the grid lines by showing the background through */
+            background-color: var(--grid-line);
+            gap: 1px;
+
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+
+            animation: fadein 1.2s ease-in-out forwards;
+
+        }
+        @keyframes fadein {
+            from {
+                opacity: 0;
+                transform: scale(0.94);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px); /* Empieza 30px abajo */
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);    /* Termina en su posición original */
+            }
+        }
+
+        /* Base style for all 'empty' or label cells to have a solid background */
+        .cell-fill {
+            background-color: var(--bg-dark);
+        }
+
+        .day-label {
+            grid-row: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            color: var(--accent-gold);
+            background: #111; /* Slightly different to distinguish header */
+            text-transform: uppercase;
+        }
+
+        .hour-label {
+            grid-column: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-dim);
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        /* The Class Cards */
+        .class-box {
+            --card-hue: calc(var(--index) * 160);
+            background: linear-gradient(
+                145deg,
+                hsla(var(--card-hue), 80%, 60%, 0.15),
+                hsla(var(--card-hue), 80%, 40%, 0.05)
+            );
+            border-left: 4px solid hsl(var(--card-hue), 80%, 60%);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin: 4px;
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            z-index: 2; /* Sits above the grid-fill cells */
+
+            grid-row-start: var(--start);
+            grid-row-end: var(--end);
+            grid-column: var(--day);
+
+            opacity: 0; /* Empiezan invisibles */
+            animation: fadeUp 0.8s ease-out forwards;
+
+            /* El retraso base de 1s + un incremento basado en la variable --i */
+            animation-delay: calc(1s + (var(--i) * 0.1s));
+        }
+
+        .class-box:hover {
+            transform: translateY(-3px) scale(1.01);
+            background: hsla(var(--card-hue), 80%, 60%, 0.25);
+            z-index: 10;
+        }
+
+        .time-tag {
+            font-size: 0.7rem;
+            color: #fff;
+            opacity: 0.6;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .subject-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin: 0;
+            color: #fff;
+        }
+
+        .room-info {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            margin-top: auto;
+        }
+
+        .corner {
+            grid-row: 1;
+            grid-column: 1;
+            background: #111;
+        }
+
+        .upload_button {
+            /* Positioning */
+            position: absolute;
+            right: 50px;
+            bottom: 50px;
+
+            /* Flexbox centers the icon perfectly */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            /* Sizing & Shape */
+            width: 60px;
+            height: 60px;
+            border-radius: 50%; /* Circular buttons usually look better for FABs */
+
+            /* Border & Colors */
+            text-decoration: none;
+            color: var(--accent-gold);
+            border: 2px solid var(--accent-gold);
+            background: transparent;
+
+            opacity: 0;
+
+            animation: fadeUp 0.8s ease-out 1s forwards;
+            /* Smooth Transition */
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .upload_button:hover {
+            /* Instead of changing border-width (which moves things),
+               we use a background fill or a shadow scale */
+            background-color: var(--accent-gold);
+            transform: translateY(-5px); /* Adds a "lift" effect */
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .upload_button svg {
+            fill: var(--accent-gold);
+            width: 28px; /* Consistent sizing */
+            height: 28px;
+            transition: fill 0.3s ease;
+        }
+
+        .upload_button:hover svg {
+            /* Flip the icon color so it's visible against the gold background */
+            fill: #ffffff;
+        }
+
+
+    </style>
+</head>
+<body>
+
+    <div class="schedule-wrapper">
+        <div class="corner"></div>
+        <div class="day-label" style="grid-column: 2;">LUN</div>
+        <div class="day-label" style="grid-column: 3;">MAR</div>
+        <div class="day-label" style="grid-column: 4;">MIE</div>
+        <div class="day-label" style="grid-column: 5;">JUE</div>
+        <div class="day-label" style="grid-column: 6;">VIE</div>
+
+        {% for h in hour_range %}
+            <div class="hour-label" style="grid-row: {{ forloop.counter|add:1 }};">
+                {{ h }}:00
+            </div>
+
+            {% for i in "23456"|make_list %}
+                <div class="cell-fill" style="grid-row: {{ forloop.parentloop.counter|add:1 }}; grid-column: {{ i }};"></div>
+            {% endfor %}
+        {% endfor %}
+
+        {% for item in myClasses %}
+            <div class="class-box"
+                 style="--day: {{ item.weekday|add:2 }};
+                        --start: {{ item.start_hour.hour|add:2|add:neg_start_hour_limit }};
+                        --end: {{ item.end_hour.hour|add:2|add:neg_start_hour_limit }};
+                        --index: {{ item.subject.id }};
+                        --i: {{ forloop.counter|add:0.1 }}">
+
+                <div class="time-tag">
+
+                </div>
+
+                <h3 class="subject-title">{{ item.subject.name }}</h3>
+
+                <div class="room-info">
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <a class="upload_button" href="/file"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M352 128C352 110.3 337.7 96 320 96C302.3 96 288 110.3 288 128L288 288L128 288C110.3 288 96 302.3 96 320C96 337.7 110.3 352 128 352L288 352L288 512C288 529.7 302.3 544 320 544C337.7 544 352 529.7 352 512L352 352L512 352C529.7 352 544 337.7 544 320C544 302.3 529.7 288 512 288L352 288L352 128z"/></svg></a>
+</body>
+</html>
